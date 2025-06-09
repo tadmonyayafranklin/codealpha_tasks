@@ -23,7 +23,7 @@
 
 `Payload Display`: The script shows the first 50 bytes of the packet payload, which can be useful for inspecting content (e.g., HTTP headers, DNS requests).
 
-`Customizing the Sniffer`:
+## Customizing the Sniffer:
 - You can specify a network interface to capture from (e.g., `eth0` for Ethernet or `wlan0` for Wi-Fi).
 
 - You can increase or decrease the number of packets captured (count parameter).
