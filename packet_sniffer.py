@@ -1,51 +1,38 @@
-import scapy.all as scapy
+from scapy.all import sniff
 
+# Callback function that is called when a packet is captured
 def packet_callback(packet):
-    """
-    This function is called whenever a packet is captured.
-    It prints source/destination IP, protocol, and payload.
-    """
-    print("\n[Packet Captured]")
+    print("\nPacket Captured:")
     
-    # Check if the packet has IP layer
-    if packet.haslayer(scapy.IP):
-        ip_src = packet[scapy.IP].src  # Source IP
-        ip_dst = packet[scapy.IP].dst  # Destination IP
-        protocol = packet[scapy.IP].proto  # Protocol type
-        
-        print("Source IP:", ip_src)
-        print("Destination IP:", ip_dst)
-        
-        # Further inspection based on protocol
-        if protocol == 6:  # TCP
+    # Check if the packet has an IP layer
+    if packet.haslayer('IP'):
+        # Extract source and destination IP addresses
+        src_ip = packet['IP'].src
+        dst_ip = packet['IP'].dst
+        print("Source IP: ", src_ip)
+        print("Destination IP: ", dst_ip)
+
+        # Extract protocol type (TCP, UDP, ICMP)
+        if packet.haslayer('TCP'):
             print("Protocol: TCP")
-            if packet.haslayer(scapy.TCP):
-                payload = packet[scapy.TCP].payload
-                print("TCP Payload:", payload)
-        elif protocol == 17:  # UDP
+        elif packet.haslayer('UDP'):
             print("Protocol: UDP")
-            if packet.haslayer(scapy.UDP):
-                payload = packet[scapy.UDP].payload
-                print("UDP Payload:", payload)
-        elif protocol == 1:  # ICMP (Ping)
+        elif packet.haslayer('ICMP'):
             print("Protocol: ICMP")
-            if packet.haslayer(scapy.ICMP):
-                payload = packet[scapy.ICMP].payload
-                print("ICMP Payload:", payload)
-        
-        # Print raw payload data (e.g., in case of HTTP requests or others)
-        if packet.haslayer(scapy.Raw):
-            raw_data = packet[scapy.Raw].load
-            print("Raw Data:", raw_data)
+        else:
+            print("Protocol: {packet.proto}")
 
-# Sniff network traffic
-def capture_packets(interface="wlp12s0", count=10):
-    """
-    Capture a specified number of packets on a given network interface.
-    """
-    print("Starting packet capture...")
-    scapy.sniff(iface=interface, prn=packet_callback, count=count)
+        # Extract payload (optional, depending on packet size)
+        if packet.haslayer('Raw'):
+            print("Payload (Raw Data): ", packet['Raw'].load[:50])  # Show first 50 bytes
 
-# Example usage:
+# Function to start the sniffing process
+def start_sniffing(interface="wlp12s0", count=10):
+    # Sniff for 'count' packets and use the callback function for each captured packet
+    print("Sniffing", count, " packets...")
+    sniff(iface=interface, count=count, prn=packet_callback, store=False)
+
+# Main function to initiate packet sniffing
 if __name__ == "__main__":
-    capture_packets(interface="wlp12s0", count=5)  # Capture 5 packets on interface wlp12s0
+    # You can specify an interface, or leave it as None to use default
+    start_sniffing(count=5)
